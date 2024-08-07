@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: reboot_project
+
+jwt:
+  expiration_time: 86400000
+  secret: aaaaaaaaaaaaaaaaa
