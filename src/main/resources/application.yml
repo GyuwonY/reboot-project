@@ -1,7 +1,29 @@
 spring:
   application:
     name: reboot_project
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ENC(XH334eDp+pbDET4EBTBlOgJyemd2XyY7AVi2nkJWuts=)
+    password: ENC(xaBadvd8mFaPJmCRfD1QZ+shDt880OCXBR367/IkKUQ=)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 300000
 
 jwt:
   expiration_time: 86400000
-  secret: aaaaaaaaaaaaaaaaa
+  secret: ENC(xmouGuoL59FBllKe/5weUVtA32z1rV+45pKlPft7F0enTHUmdCMbAtynNLkrqM7zz/sOgXMsz2AEktDSeJdOjQ==)
+
+jasypt:
+  encryptor:
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+    algorithm: PBEWithMD5AndTripleDES
+
