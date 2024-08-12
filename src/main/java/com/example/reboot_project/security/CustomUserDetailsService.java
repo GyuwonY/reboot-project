@@ -1,7 +1,7 @@
 package com.example.reboot_project.security;
 
-import com.example.reboot_project.entity.UserEntity;
-import com.example.reboot_project.repository.UserRepository;
+import com.example.reboot_project.entity.user.UserEntity;
+import com.example.reboot_project.repository.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+    public CustomUserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Not available User"));
 

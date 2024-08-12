@@ -1,17 +1,19 @@
 package com.example.reboot_project.service;
 
 import com.example.reboot_project.dto.user.*;
-import com.example.reboot_project.entity.DeviceEntity;
-import com.example.reboot_project.entity.UserEntity;
-import com.example.reboot_project.entity.enums.UserStatusEnum;
-import com.example.reboot_project.repository.DeviceRepository;
-import com.example.reboot_project.repository.UserRepository;
+import com.example.reboot_project.entity.user.DeviceEntity;
+import com.example.reboot_project.entity.user.UserEntity;
+import com.example.reboot_project.entity.user.enums.DeviceTypeEnum;
+import com.example.reboot_project.entity.user.enums.UserStatusEnum;
+import com.example.reboot_project.repository.user.DeviceRepository;
+import com.example.reboot_project.repository.user.UserRepository;
 import com.example.reboot_project.utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.naming.InvalidNameException;
 import java.security.InvalidParameterException;
 import java.util.List;
 
@@ -87,6 +89,17 @@ public class UserService {
         return TokenResponseDto.builder()
                 .token(token)
                 .build();
+    }
+
+    @Transactional
+    public void signOut(
+            UserEntity user,
+            DeviceTypeEnum deviceType
+    ) {
+        DeviceEntity device = deviceRepository.findByUserIdAndType(user.getId(), deviceType)
+                .orElseThrow(() -> new UsernameNotFoundException("로그인 상태가 아닙니다."));
+
+        device.setAccessToken("");
     }
 
     @Transactional

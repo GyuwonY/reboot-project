@@ -1,4 +1,4 @@
-package com.example.reboot_project.scheduler;
+package com.example.reboot_project.schedulers;
 
 import com.example.reboot_project.service.EmailService;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Component
 public class AuthScheduler {
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 */5 * * * *")
     public void deleteExpiredMailCode(){
         Set<String> keySet = EmailService.verifyCodeMap.keySet();
 

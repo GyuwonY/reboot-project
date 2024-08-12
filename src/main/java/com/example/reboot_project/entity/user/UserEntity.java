@@ -1,6 +1,7 @@
-package com.example.reboot_project.entity;
+package com.example.reboot_project.entity.user;
 
-import com.example.reboot_project.entity.enums.UserStatusEnum;
+import com.example.reboot_project.entity.BaseEntity;
+import com.example.reboot_project.entity.user.enums.UserStatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

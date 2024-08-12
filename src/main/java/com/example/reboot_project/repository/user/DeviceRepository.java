@@ -1,7 +1,7 @@
-package com.example.reboot_project.repository;
+package com.example.reboot_project.repository.user;
 
-import com.example.reboot_project.entity.DeviceEntity;
-import com.example.reboot_project.entity.enums.DeviceTypeEnum;
+import com.example.reboot_project.entity.user.DeviceEntity;
+import com.example.reboot_project.entity.user.enums.DeviceTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

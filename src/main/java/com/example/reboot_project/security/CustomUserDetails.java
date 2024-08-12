@@ -1,6 +1,6 @@
 package com.example.reboot_project.security;
 
-import com.example.reboot_project.entity.UserEntity;
+import com.example.reboot_project.entity.user.UserEntity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

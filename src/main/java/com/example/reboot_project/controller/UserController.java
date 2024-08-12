@@ -1,11 +1,14 @@
 package com.example.reboot_project.controller;
 
 import com.example.reboot_project.dto.user.*;
+import com.example.reboot_project.entity.user.enums.DeviceTypeEnum;
+import com.example.reboot_project.security.CustomUserDetails;
 import com.example.reboot_project.service.EmailService;
 import com.example.reboot_project.service.UserService;
 import jakarta.mail.MessagingException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -52,6 +55,14 @@ public class UserController {
             @RequestBody AuthUserRequestDto userDto
     ) {
         return userService.authUser(userDto);
+    }
+
+    @GetMapping("/signout")
+    public void signOut(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam DeviceTypeEnum deviceType
+    ) {
+        userService.signOut(userDetails.getUser(), deviceType);
     }
 
     @PutMapping("/{userId}")

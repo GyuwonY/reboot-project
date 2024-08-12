@@ -1,6 +1,6 @@
 package com.example.reboot_project.dto.user;
 
-import com.example.reboot_project.entity.enums.DeviceTypeEnum;
+import com.example.reboot_project.entity.user.enums.DeviceTypeEnum;
 import com.example.reboot_project.utils.EncryptionUtil;
 import com.example.reboot_project.utils.PasswordEncoder;
 import lombok.Getter;

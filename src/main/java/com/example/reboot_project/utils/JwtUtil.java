@@ -1,6 +1,6 @@
 package com.example.reboot_project.utils;
 
-import com.example.reboot_project.entity.UserEntity;
+import com.example.reboot_project.entity.user.UserEntity;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

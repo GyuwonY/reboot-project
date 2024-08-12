@@ -1,6 +1,7 @@
 package com.example.reboot_project.security;
 
 import com.example.reboot_project.utils.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,15 +14,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final CustomUserDetailsService customUserDetailsService;
-    private final JwtUtil jwtUtil;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
     public SecurityConfig(
-            CustomUserDetailsService customUserDetailsService,
-            JwtUtil jwtUtil
+            JwtAuthenticationFilter jwtAuthenticationFilter
     ){
-        this.customUserDetailsService = customUserDetailsService;
-        this.jwtUtil = jwtUtil;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -31,7 +30,7 @@ public class SecurityConfig {
                 SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new JwtAuthenticationFilter(customUserDetailsService, jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/user/**").permitAll()

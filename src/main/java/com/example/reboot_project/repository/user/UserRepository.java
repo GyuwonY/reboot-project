@@ -1,6 +1,6 @@
-package com.example.reboot_project.repository;
+package com.example.reboot_project.repository.user;
 
-import com.example.reboot_project.entity.UserEntity;
+import com.example.reboot_project.entity.user.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
