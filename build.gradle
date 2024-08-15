@@ -4,50 +4,104 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.6'
 }
 
-jar {
-    enabled = false
-}
+allprojects{
+    group = 'com.example'
 
-group = 'com.example'
+    repositories {
+        mavenCentral()
+    }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    jar {
+        enabled = false
+    }
+
+    sourceCompatibility = '21'
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok:1.18.30'
+        annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        systemProperty 'jasypt.encryptor.password', findProperty("jasypt.encryptor.password")
+    }
+
+    tasks.register("prepareKotlinBuildScriptModel"){}
+}
+
+project(':common') {
+    dependencies {
+        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.2'
     }
 }
 
-repositories {
-    mavenCentral()
+project(':user-service') {
+    dependencies {
+        implementation(project(':common'))
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.2'
+        implementation 'org.springframework.boot:spring-boot-starter-web:3.3.2'
+        implementation 'org.springframework.boot:spring-boot-starter:3.3.2'
+        runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.2'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
+
+        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
+        implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.1.2'
+    }
 }
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+project(':order-service') {
+    dependencies {
+        implementation(project(':common'))
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.2'
+        implementation 'org.springframework.boot:spring-boot-starter-web:3.3.2'
+        implementation 'org.springframework.boot:spring-boot-starter:3.3.2'
+        runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.2'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.1'
-
-    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
-
+        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
+        implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.1.2'
+    }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-    systemProperty 'jasypt.encryptor.password', findProperty("jasypt.encryptor.password")
+project(':clothes-service') {
+    dependencies {
+        implementation(project(':common'))
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.2'
+        implementation 'org.springframework.boot:spring-boot-starter-web:3.3.2'
+        implementation 'org.springframework.boot:spring-boot-starter:3.3.2'
+        runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.2'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
+
+        implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
+        implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.1.2'
+    }
+}
+
+project(':gateway') {
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.2'
+    }
 }

@@ -3,14 +3,44 @@ version: '3.8'
 services:
   userdb:
     image: mysql:8.0
-    container_name: mysql_container
+    container_name: user_mysql_container
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: user
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/userdb
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+
+  clothesdb:
+    image: mysql:8.0
+    container_name: clothes_mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: clothes
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/clothesdb
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      retries: 10
+
+  orderdb:
+    image: mysql:8.0
+    container_name: order_mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: order
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/orderdb
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -26,9 +56,11 @@ services:
       interval: 5s
       retries: 10
 
-  app:
-    build: .
-    container_name: java_app_container
+  user:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
     depends_on:
       userdb:
         condition: service_healthy
@@ -42,5 +74,57 @@ services:
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_REDIS_HOST: redis
 
+  clothes:
+    build:
+      context: ./clothes-service
+      dockerfile: Dockerfile
+    container_name: clothes-service
+    depends_on:
+      clothesdb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://clothesdb:3306/clothes
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_REDIS_HOST: redis
+
+  order:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    depends_on:
+      orderdb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://orderdb:3306/order
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    depends_on:
+      orderdb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
 volumes:
   mysql_data:

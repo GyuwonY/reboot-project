@@ -1,1 +1,3 @@
 rootProject.name = 'reboot_project'
+
+include 'common', 'user-service', 'order-service', 'clothes-service', 'gateway'
