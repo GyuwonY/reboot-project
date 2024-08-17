@@ -3,8 +3,10 @@ package com.example.userservice.dto;
 import com.example.common.entity.enums.user.UserStatusEnum;
 import com.example.userservice.utils.EncryptionUtil;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 @Setter
 @Builder
 public class UserResponseDto {
@@ -14,10 +16,9 @@ public class UserResponseDto {
     private String detailAddress;
     private UserStatusEnum status;
 
-    public void decryptInfo() {
-        this.email = EncryptionUtil.decrypt(email);
-        this.name = EncryptionUtil.decrypt(name);
-        this.address = EncryptionUtil.decrypt(address);
-        this.detailAddress = EncryptionUtil.decrypt(detailAddress);
+    public void decryptInfo(EncryptionUtil encryptionUtil) {
+        this.name = encryptionUtil.decrypt(name);
+        this.address = encryptionUtil.decrypt(address);
+        this.detailAddress = encryptionUtil.decrypt(detailAddress);
     }
 }

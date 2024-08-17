@@ -58,7 +58,7 @@ public class UserController {
     @GetMapping("/signout")
     public void signOut(
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam DeviceTypeEnum deviceType
+            @RequestParam(value = "deviceType") DeviceTypeEnum deviceType
     ) {
         userService.signOut(userId, deviceType);
     }

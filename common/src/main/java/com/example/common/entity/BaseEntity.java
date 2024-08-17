@@ -17,7 +17,6 @@ import java.util.UUID;
 @EntityListeners({ AuditingEntityListener.class })
 public abstract class BaseEntity {
     @Id
-    @GeneratedValue
     private final String id = UUID.randomUUID().toString();
 
     @CreatedDate

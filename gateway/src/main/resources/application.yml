@@ -9,20 +9,16 @@ spring:
           filters:
             - JwtAuthenticationGatewayFilter
         - id: clothes
-          uri: http://clothes:8081
+          uri: http://clothes:8080
           predicates:
-            - Path=/clothes/**
-          filters:
-            - JwtAuthenticationGatewayFilter
+            - Path=/clothes/**, /cart/**
         - id: order
-          uri: http://order:8082
+          uri: http://order:8080
           predicates:
-            - Path=/order/**
-          filters:
-            - JwtAuthenticationGatewayFilter
+            - Path=/order/**, /errorful/**
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
   autoconfigure:

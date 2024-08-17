@@ -29,11 +29,15 @@ resilience4j:
   circuitbreaker:
     configs:
       default:
-        waitDurationInOpenState: 30s
-        slowCallRateThreshold: 80
-        slowCallDurationThreshold: 5s
-        registerHealthIndicator: true
-        recordFailurePredicate: com.example.common.config.DefaultExceptionRecordFailurePredicate
+        register-health-indicator: true #  /actuator/health 로 상태 확인 가능
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 10
+        slow-call-rate-threshold: 10
+        slow-call-duration-threshold: 7s
+        wait-duration-in-open-state: 10s # open -> half open 전환 시간
+        permitted-number-of-calls-in-half-open-state: 5
     instances:
       default:
         baseConfig: default

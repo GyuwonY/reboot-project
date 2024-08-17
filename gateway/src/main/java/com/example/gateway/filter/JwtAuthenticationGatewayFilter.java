@@ -42,6 +42,10 @@ public class JwtAuthenticationGatewayFilter extends AbstractGatewayFilterFactory
 
             String authorizationHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
+            if (authorizationHeader == null) {
+                throw new IllegalArgumentException("로그인이 필요합니다.");
+            }
+
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 String token = authorizationHeader.substring(7);
                 try {
@@ -56,9 +60,8 @@ public class JwtAuthenticationGatewayFilter extends AbstractGatewayFilterFactory
                     ).orElseThrow();
 
                     exchange.getRequest().mutate()
-                            .header("X-User-Id", claims.get("userId").toString())
+                            .header("X-User-Id", claims.get("id").toString())
                             .build();
-
                 } catch (Exception e) {
                     return Mono.error(new RuntimeException("Invalid Token"));
                 }
@@ -71,17 +74,9 @@ public class JwtAuthenticationGatewayFilter extends AbstractGatewayFilterFactory
     private boolean isExcludedPath(String path) {
 
         if (path.startsWith("/user")) {
-            path = path.replaceFirst("/user", "");
-
-            if (path.equals("/verifycode") || path.equals("/verify") ||
-                    path.equals("/signup") || path.equals("/signin")) {
-                return true;
-            }
-        } else if (path.startsWith("/clothes")) {
-            return true;
-        }
-
-        return false;
+            return path.equals("/user/verifycode") || path.equals("/user/verify") ||
+                    path.equals("/user/signup") || path.equals("/user/signin");
+        } else return path.startsWith("/clothes") || path.startsWith("/errorful");
     }
     public static class Config {
 

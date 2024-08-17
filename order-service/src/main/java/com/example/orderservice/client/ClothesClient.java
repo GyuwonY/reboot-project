@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "clothesClient", url = "http://order:8082/internal/clothes")
+@FeignClient(name = "clothesClient", url = "http://order:8080/internal/clothes")
 public interface ClothesClient {
     @CircuitBreaker(name = "default")
     @Retry(name = "default")

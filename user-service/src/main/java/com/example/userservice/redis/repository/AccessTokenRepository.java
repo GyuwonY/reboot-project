@@ -8,5 +8,4 @@ import java.util.List;
 
 @Repository
 public interface AccessTokenRepository extends CrudRepository<AccessToken, String> {
-    void deleteAllByDeviceIdIn(List<String> deviceIdList);
 }

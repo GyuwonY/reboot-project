@@ -2,8 +2,8 @@ package com.example.userservice.dto;
 
 import com.example.common.entity.enums.user.DeviceTypeEnum;
 import com.example.userservice.utils.EncryptionUtil;
-import com.example.userservice.utils.PasswordEncoder;
 import lombok.Getter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 public class SaveUserRequestDto {
@@ -14,11 +14,10 @@ public class SaveUserRequestDto {
     private String detailAddress;
     private DeviceTypeEnum deviceType;
 
-    public void encryptInfo() {
-        this.email = EncryptionUtil.encrypt(email);
-        this.name = EncryptionUtil.encrypt(name);
-        this.address = EncryptionUtil.encrypt(address);
-        this.detailAddress = EncryptionUtil.encrypt(detailAddress);
-        this.password = PasswordEncoder.hash(password);
+    public void encryptInfo(EncryptionUtil encryptionUtil, PasswordEncoder passwordEncoder) {
+        this.name = encryptionUtil.encrypt(name);
+        this.address = encryptionUtil.encrypt(address);
+        this.detailAddress = encryptionUtil.encrypt(detailAddress);
+        this.password = passwordEncoder.encode(password);
     }
 }

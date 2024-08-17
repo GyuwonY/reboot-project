@@ -49,6 +49,9 @@ services:
   redis:
     image: redis:latest
     container_name: redis_container
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
       - "6379:6379"
     healthcheck:
@@ -73,6 +76,7 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
 
   clothes:
     build:
@@ -91,6 +95,7 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
 
   order:
     build:

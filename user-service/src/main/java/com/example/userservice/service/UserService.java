@@ -9,8 +9,10 @@ import com.example.userservice.redis.entity.AccessToken;
 import com.example.userservice.redis.repository.AccessTokenRepository;
 import com.example.userservice.repository.DeviceRepository;
 import com.example.userservice.repository.UserRepository;
+import com.example.userservice.utils.EncryptionUtil;
 import com.example.userservice.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.security.InvalidParameterException;
@@ -22,24 +24,34 @@ public class UserService {
     private final DeviceRepository deviceRepository;
     private final JwtUtil jwtUtil;
     private final AccessTokenRepository accessTokenRepository;
+    private final EncryptionUtil encryptionUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserService(
             UserRepository userRepository,
             DeviceRepository deviceRepository,
             JwtUtil jwtUtil,
-            AccessTokenRepository accessTokenRepository
+            AccessTokenRepository accessTokenRepository,
+            EncryptionUtil encryptionUtil,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
         this.jwtUtil = jwtUtil;
         this.accessTokenRepository = accessTokenRepository;
+        this.encryptionUtil = encryptionUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public TokenResponseDto saveUser (
             SaveUserRequestDto userDto
     ) {
-        userDto.encryptInfo();
+        userDto.encryptInfo(encryptionUtil, passwordEncoder);
+
+        userRepository.findByEmail(userDto.getEmail()).ifPresent(user -> {
+            throw new IllegalArgumentException("중복된 이메일이 존재합니다.");
+        });
 
         UserEntity user = userRepository.save(
                 UserEntity.builder()
@@ -75,11 +87,10 @@ public class UserService {
     public TokenResponseDto authUser(
             AuthUserRequestDto userDto
     ) {
-        userDto.encryptInfo();
         UserEntity user = userRepository.findByEmail(userDto.getEmail()).orElseThrow();
 
-        if(!user.getPassword().equals(userDto.getPassword())) {
-            throw new RuntimeException("존재하지 않는 계정입니다.");
+        if(!passwordEncoder.matches(userDto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("존재하지 않는 계정입니다.");
         }
 
         DeviceEntity device = deviceRepository.findByUserIdAndType(user.getId(), userDto.getDeviceType())
@@ -123,13 +134,15 @@ public class UserService {
             String userId,
             UpdateUserRequestDto userDto
     ) {
-        userDto.encryptInfo();
+        userDto.encryptInfo(encryptionUtil, passwordEncoder);
         UserEntity user = userRepository.findById(userId).orElseThrow(InvalidParameterException::new);
 
-        if(!userDto.getPassword().equals(user.getPassword())) {
+        if(!passwordEncoder.matches(userDto.getPassword(), user.getPassword())) {
             List<DeviceEntity> deviceList = deviceRepository.findAllByUserId(userId);
-            deviceList.forEach(device -> device.setAccessToken(""));
-            accessTokenRepository.deleteAllByDeviceIdIn(deviceList.stream().map(DeviceEntity::getId).toList());
+            deviceList.forEach(device -> {
+                device.setAccessToken("");
+                accessTokenRepository.deleteById(device.getId());
+            });
         }
 
         user.update(
@@ -140,12 +153,14 @@ public class UserService {
                 userDto.getStatus()
         );
 
-        return UserResponseDto.builder()
+        UserResponseDto userResponse = UserResponseDto.builder()
                 .email(user.getEmail())
                 .name(user.getName())
                 .address(user.getAddress())
                 .detailAddress(user.getDetailAddress())
                 .status(user.getStatus())
                 .build();
+        userResponse.decryptInfo(encryptionUtil);
+        return userResponse;
     }
 }
