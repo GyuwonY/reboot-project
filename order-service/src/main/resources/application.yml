@@ -51,3 +51,19 @@ resilience4j:
       default:
         maxAttempts: 3
         waitDuration: 500ms
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: order
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+ribbon:
+  eureka:
+    enabled: true

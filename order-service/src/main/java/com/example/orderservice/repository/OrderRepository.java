@@ -27,4 +27,11 @@ public interface OrderRepository extends JpaRepository<OrderEntity, String> {
             where o.status = :status and o.updatedAt >= :yesterday and o.updatedAt < :today
             """)
     List<OrderEntity> findAllByStatusAndUpdatedAt(OrderStatusEnum status, LocalDate today, LocalDate yesterday);
+
+    @Query("""
+            select o from OrderEntity o 
+            left join fetch o.orderOptionList oo
+            where o.id = :id and o.status != :status
+            """)
+    Optional<OrderEntity> findByIdAndStatusNot(String id, OrderStatusEnum status);
 }

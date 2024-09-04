@@ -8,7 +8,10 @@ import com.example.common.entity.enums.clothes.ClothesStatusEnum;
 import com.example.clothesservice.repository.ClothesOptionRepository;
 import com.example.clothesservice.repository.ClothesRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,17 +20,23 @@ import java.util.stream.Collectors;
 public class ClothesService {
     private final ClothesRepository clothesRepository;
     private final ClothesOptionRepository clothesOptionRepository;
+    private RedisTemplate<String, Object> redisTemplate;
 
     public ClothesService(
             ClothesRepository clothesRepository,
-            ClothesOptionRepository clothesOptionRepository
+            ClothesOptionRepository clothesOptionRepository,
+            RedisTemplate<String, Object> redisTemplate
     ) {
         this.clothesRepository = clothesRepository;
         this.clothesOptionRepository = clothesOptionRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     public List<ClothesListResponseDto> getClothesList() {
-        List<ClothesEntity> clothesList = clothesRepository.findAllByStatus(ClothesStatusEnum.ACTIVE);
+        List<ClothesEntity> clothesList = clothesRepository.findAllByStatusAndStartAtLessThanEqual(
+                ClothesStatusEnum.ACTIVE,
+                LocalDateTime.now()
+        );
 
         return clothesList.stream().map(clothes -> {
             return ClothesListResponseDto.builder()
@@ -106,5 +115,14 @@ public class ClothesService {
             }
 
         }
+    }
+
+    public GetStockByOptionIdResDto getStockByOptionId(String id) {
+        ClothesOptionEntity option = clothesOptionRepository.findById(id).orElseThrow();
+
+        return GetStockByOptionIdResDto.builder()
+                .stock(option.getStock())
+                .id(option.getId())
+                .build();
     }
 }

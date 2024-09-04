@@ -3,6 +3,7 @@ package com.example.orderservice.service;
 import com.example.common.entity.enums.order.OrderStatusEnum;
 import com.example.common.entity.enums.order.PaymentStatusEnum;
 import com.example.orderservice.client.ClothesClient;
+import com.example.orderservice.client.StockClient;
 import com.example.orderservice.dto.*;
 import com.example.orderservice.entity.*;
 import com.example.orderservice.repository.*;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +26,7 @@ public class OrderService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final ClothesClient clothesClient;
+    private final StockClient stockClient;
 
     @Autowired
     public OrderService(
@@ -32,7 +35,8 @@ public class OrderService {
             OrderOptionRepository orderOptionRepository,
             OrderHistoryRepository orderHistoryRepository,
             PaymentHistoryRepository paymentHistoryRepository,
-            ClothesClient clothesClient
+            ClothesClient clothesClient,
+            StockClient stockClient
     ) {
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
@@ -40,6 +44,7 @@ public class OrderService {
         this.orderHistoryRepository = orderHistoryRepository;
         this.paymentHistoryRepository = paymentHistoryRepository;
         this.clothesClient = clothesClient;
+        this.stockClient = stockClient;
     }
 
     @Transactional
@@ -58,33 +63,17 @@ public class OrderService {
                 new ArrayList<>(optionRequestMap.keySet())
         );
 
-        clothesClient.updateStock(
-                saveOrderRequestDto.getOrderOptionList()
-                .stream().map(order -> {
-                    return UpdateStockRequestDto.builder()
-                            .id(order.getClothesOptionId())
-                            .count(-order.getOptionCount())
-                            .build();
-                }).toList()
-        );
-
-        PaymentEntity payment = PaymentEntity.builder()
-                .amount(0)
-                .type(saveOrderRequestDto.getPaymentType())
-                .status(PaymentStatusEnum.PAID)
-                .build();
-
         OrderEntity order = OrderEntity.builder()
-                .amount(payment.getAmount())
-                .status(OrderStatusEnum.PAID)
-                .payment(payment)
+                .amount(0)
+                .status(OrderStatusEnum.ORDERED)
                 .userId(saveOrderRequestDto.getUserId())
+                .orderOptionList(new ArrayList<>())
                 .build();
 
-        for(ClothesOptionListByIdsResponseDto clothesOption : clothesOptionList) {
+        for (ClothesOptionListByIdsResponseDto clothesOption : clothesOptionList) {
             int orderCnt = optionRequestMap.get(clothesOption.getClothesOptionId()).getOptionCount();
             int paymentPrice = clothesOption.getPrice() * orderCnt;
-            payment.addAmount(paymentPrice);
+            order.addAmount(paymentPrice);
 
             order.getOrderOptionList().add(
                     OrderOptionEntity.builder()
@@ -94,6 +83,64 @@ public class OrderService {
                             .build()
             );
         }
+
+        OrderHistoryEntity orderHistory = OrderHistoryEntity.builder()
+                .paymentId(order.getId())
+                .status(order.getStatus())
+                .userId(saveOrderRequestDto.getUserId())
+                .build();
+
+        orderRepository.save(order);
+        orderOptionRepository.saveAll(order.getOrderOptionList());
+        orderHistoryRepository.save(orderHistory);
+
+
+        stockClient.saveWaitingPay(
+                SaveWaitingPayReqDto.builder()
+                        .orderId(order.getId())
+                        .updateStockRequestDtoList(
+                                order.getOrderOptionList().stream().map(option -> {
+                                    return UpdateStockRequestDto.builder()
+                                            .id(option.getId())
+                                            .count(option.getCount())
+                                            .build();
+                                }).toList()
+                        ).build()
+        );
+    }
+
+    @Transactional
+    public void payOrder(
+            PayOrderRequestDto payOrderRequestDto
+    ) {
+        if (new Random().nextInt(100) < 20) {
+            throw new IllegalArgumentException("고객귀책 결제 불가");
+        }
+
+        OrderEntity order = orderRepository.findByIdAndStatusNot(
+                payOrderRequestDto.getOrderId(),
+                OrderStatusEnum.ORDERED
+        ).orElseThrow();
+        order.setStatus(OrderStatusEnum.PAID);
+
+        stockClient.deleteWaitingPay(
+                SaveWaitingPayReqDto.builder()
+                        .orderId(order.getId())
+                        .updateStockRequestDtoList(
+                                order.getOrderOptionList().stream().map(option -> {
+                                    return UpdateStockRequestDto.builder()
+                                            .id(option.getId())
+                                            .count(option.getCount())
+                                            .build();
+                                }).toList()
+                        ).build()
+        );
+
+        PaymentEntity payment = PaymentEntity.builder()
+                .amount(order.getAmount())
+                .type(payOrderRequestDto.getPaymentType())
+                .status(PaymentStatusEnum.PAID)
+                .build();
 
         PaymentHistoryEntity paymentHistory = PaymentHistoryEntity.builder()
                 .paymentId(payment.getId())
@@ -105,25 +152,22 @@ public class OrderService {
         OrderHistoryEntity orderHistory = OrderHistoryEntity.builder()
                 .paymentId(order.getId())
                 .status(order.getStatus())
-                .paymentId(payment.getId())
-                .userId(saveOrderRequestDto.getUserId())
+                .userId(order.getUserId())
                 .build();
 
-        paymentRepository.save(payment);
-        orderRepository.save(order);
-        orderOptionRepository.saveAll(order.getOrderOptionList());
-        paymentHistoryRepository.save(paymentHistory);
         orderHistoryRepository.save(orderHistory);
+        paymentRepository.save(payment);
+        paymentHistoryRepository.save(paymentHistory);
     }
 
     public List<OrderListResponseDto> getOrderList(String userId) {
-        List<OrderEntity> orderList =  orderRepository.findAllByUserIdAndStatusNot(
+        List<OrderEntity> orderList = orderRepository.findAllByUserIdAndStatusNot(
                 userId,
                 OrderStatusEnum.DELETED
         );
 
         List<String> optionIdList = new ArrayList<>();
-        for(OrderEntity order : orderList) {
+        for (OrderEntity order : orderList) {
             optionIdList.addAll(order.getOrderOptionList().stream().map(OrderOptionEntity::getId).toList());
         }
 
@@ -169,19 +213,19 @@ public class OrderService {
                 OrderStatusEnum.DELETED
         ).orElseThrow();
 
-        if(order.getStatus().equals(OrderStatusEnum.PAID)) {
+        if (order.getStatus().equals(OrderStatusEnum.PAID)) {
             order.updateStatus(OrderStatusEnum.CANCELED);
             List<UpdateStockRequestDto> updateStockRequestDtoList = order.getOrderOptionList()
                     .stream().map(option -> {
                         return UpdateStockRequestDto.builder()
                                 .id(option.getClothesOptionId())
-                                .count(option.getCount())
+                                .count(-option.getCount())
                                 .build();
                     })
                     .toList();
 
-            clothesClient.updateStock(updateStockRequestDtoList);
-        } else if(order.getStatus().equals(OrderStatusEnum.COMPLETED_DELIVERY) &&
+            stockClient.updateStock(updateStockRequestDtoList);
+        } else if (order.getStatus().equals(OrderStatusEnum.COMPLETED_DELIVERY) &&
                 order.getUpdatedAt().plusDays(1).isBefore(LocalDateTime.now())) {
             order.updateStatus(OrderStatusEnum.RETURNING);
         } else {

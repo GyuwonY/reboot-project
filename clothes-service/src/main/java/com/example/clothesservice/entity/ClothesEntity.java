@@ -5,6 +5,8 @@ import com.example.common.entity.enums.clothes.ClothesTypeEnum;
 import com.example.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -33,4 +35,7 @@ public class ClothesEntity extends BaseEntity {
             mappedBy = "clothes"
     )
     List<ClothesOptionEntity> clothesOptionList;
+
+    @Column(nullable = false)
+    LocalDateTime startAt;
 }

@@ -45,3 +45,15 @@ feign:
 jwt:
   expiration_time: 86400000
   secret: secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: user
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90

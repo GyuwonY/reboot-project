@@ -11,19 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "clothesClient", url = "http://order:8080/internal/clothes")
+@FeignClient(name = "clothes")
 public interface ClothesClient {
     @CircuitBreaker(name = "default")
     @Retry(name = "default")
-    @GetMapping("/option/list")
+    @GetMapping("/internal/clothes/option/list")
     List<ClothesOptionListByIdsResponseDto> getClothesOptionListByIds(
             @RequestBody List<String> idList
-    );
-
-    @CircuitBreaker(name = "default")
-    @Retry(name = "default")
-    @PutMapping("/option/stock")
-    void updateStock(
-            @RequestBody List<UpdateStockRequestDto> optionList
     );
 }

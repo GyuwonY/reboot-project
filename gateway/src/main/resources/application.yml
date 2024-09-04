@@ -3,19 +3,23 @@ spring:
     gateway:
       routes:
         - id: user
-          uri: http://user:8080
+          uri: lb://user
           predicates:
             - Path=/user/**
           filters:
             - JwtAuthenticationGatewayFilter
         - id: clothes
-          uri: http://clothes:8080
+          uri: lb://clothes
           predicates:
             - Path=/clothes/**, /cart/**
         - id: order
-          uri: http://order:8080
+          uri: lb://order
           predicates:
             - Path=/order/**, /errorful/**
+        - id: stock
+          uri: lb://stock
+          predicates:
+            - Path=/stock/**
   data:
     redis:
       host: redis

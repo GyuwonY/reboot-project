@@ -6,12 +6,17 @@ import com.example.common.entity.enums.clothes.ClothesStatusEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ClothesRepository extends JpaRepository<ClothesEntity, String> {
-    List<ClothesEntity> findAllByStatus(ClothesStatusEnum status);
+    List<ClothesEntity> findAllByStatusAndStartAtLessThanEqual(
+            ClothesStatusEnum status,
+            LocalDateTime now
+    );
 
     @Query("""
             select c from ClothesEntity c left join fetch ClothesOptionEntity co

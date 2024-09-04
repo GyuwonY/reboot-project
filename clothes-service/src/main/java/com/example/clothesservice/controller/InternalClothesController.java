@@ -1,6 +1,7 @@
 package com.example.clothesservice.controller;
 
 import com.example.clothesservice.dto.ClothesOptionListByIdsResponseDto;
+import com.example.clothesservice.dto.GetStockByOptionIdResDto;
 import com.example.clothesservice.dto.UpdateStockRequestDto;
 import com.example.clothesservice.service.ClothesService;
 import org.springframework.web.bind.annotation.*;
@@ -31,5 +32,12 @@ public class InternalClothesController {
             @RequestBody List<UpdateStockRequestDto> optionList
     ) {
         clothesService.updateStock(optionList);
+    }
+
+    @GetMapping("/option/{id}/stock")
+    public GetStockByOptionIdResDto getStockByOptionId(
+            @PathVariable("id") String id
+    ) {
+        return clothesService.getStockByOptionId(id);
     }
 }

@@ -1,3 +1,10 @@
 rootProject.name = 'reboot_project'
 
-include 'common', 'user-service', 'order-service', 'clothes-service', 'gateway'
+include 'common'
+include 'user-service'
+include 'order-service'
+include 'clothes-service'
+include 'gateway'
+include 'discovery'
+include 'stock-service'
+include 'redis-event-publisher'

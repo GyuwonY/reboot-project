@@ -35,4 +35,6 @@ public class OrderEntity extends BaseEntity {
     public void updateStatus(OrderStatusEnum status) {
         this.status = status;
     }
+
+    public void addAmount(int amount) { this.amount += amount;}
 }
