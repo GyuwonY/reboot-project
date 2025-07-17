@@ -1,0 +1,15 @@
+package com.example.stockservice.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
+public class GetStockByOptionIdResDto {
+    String id;
+    int stock;
+}

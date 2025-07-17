@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: stock-service
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: option-ttl-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+redisson:
+  address: redis://redis:6379
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: stock
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+  circuitbreaker:
+    enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        waitDurationInOpenState: 30s
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 5s
+        registerHealthIndicator: true
+    instances:
+      default:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 6s
+        cancelRunningFuture: true
+  retry:
+    instances:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+
